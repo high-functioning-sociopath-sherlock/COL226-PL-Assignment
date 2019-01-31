@@ -1,6 +1,5 @@
-exception Not_impplemented ;;
-let div a1 a2 = raise(Not_impplemented)
-let rem a1 a2 = raise(Not_impplemented)
+open Signature_a0
+module A0 : BigInt = struct
 
 type sign = Neg | NonNeg
 type bigint = Bigint of sign*int list
@@ -10,14 +9,19 @@ type bigint = Bigint of sign*int list
 (*Functions to print  bigint number*)
 (*function for printing the int list*)
 let rec print_list l = match l with 
-     [] -> ()
-    |hd::tl -> print_int(hd); print_endline(" "); print_list(tl);;
+     [] -> ""
+    |hd::tl -> string_of_int(hd)^print_list tl;;
 
 (*Function to print the value of the bigint*)
+let print_n b = match b with 
+    Bigint(x,y) -> if(x = Neg) then "Neg "
+                   else "NonNeg ";;
+
 let print_num b = match b with 
-    Bigint(x,y) -> if(x = Neg) then print_endline("Neg")
-                   else print_endline("NonNeg");
-                   print_list(y);;
+        Bigint(x, y)->  let show = print_n b in
+                        let showlist  = print_list y in 
+                        show^showlist;;
+
 
 (*For printing boolean value on the screen*)
 let print_bool b = match b with 
@@ -135,6 +139,7 @@ let leql l1 l2 = if((cmplist l1 l2) < 1) then 1
 (*Arithmetic Operations for the list*)
 
 (*Code for Addition*)
+
 (*Addition of list*)
 let sum a b = let new_a = rev_list a in
               let new_b = rev_list b in 
@@ -147,7 +152,13 @@ let sum a b = let new_a = rev_list a in
               let revans =  isum new_a new_b 0 in
               rev_list revans;;    
 
-(* Subtraction Code *)
+(*Addition code Ends here *)
+
+
+
+
+(* Subtraction Code Start*)
+
 (*Subtraction of a single integer b form a *)
 let int_sub a b c = let ans = a-b-c in  
                     if(a >= b+c) then (ans, 0)
@@ -173,9 +184,10 @@ let sub_list a b = let new_a = extract_x(equal_len a b)in
                      let z = rev_list z1 in
                      remove_zero z ;; 
 
+(*subtraction Ends here*)
 
 
-(* Code for Multiplication *)
+(* Code for Multiplication Starts*)
 
 (*multiplying single number by a list*)
 let rec mult l a c = match l with 
@@ -199,8 +211,10 @@ let multl l1 l2 = let new_l1 = rev_list l1 in
                   let revres = rev_list res in 
                   remove_zero revres;;
 
+(*Multiplication Ends here*)
 
-(* Code for Division *)
+
+(* Code for Division Start*)
 
 (*checking how many digit two take from the dividend always len(l1) > len(l2) *)
 let rec num_div l1 l2 accu = match l1 with 
@@ -218,25 +232,25 @@ let rec qut l1 l2 acc = let temp = (sub_list l2 l1) in
                        else acc;;
                   
 (*dividing two number stored in the list l1/l2 this function returns the quoitent as well as the remainder*)
-let rec div_list l1 l2 ac = match l1, l2 with 
+let rec div_l l1 l2 ac = match l1, l2 with 
                   (_, [])-> raise(Error "cannot divide by [] empty list")
                  |(_, [0]) -> raise(Error "cannot divide by 0")
                  |([],_) -> ((rev_list ac),[0])
-                 |(0::t, _) -> div_list t l2 (0::ac)
+                 |(0::t, _) -> div_l t l2 (0::ac)
                  |(_, _) -> let (res_qu, remaning_l1) = num_div l1 l2 [] in                                  (*getting the numbers from the dividend that can be used for dividing*)
                             let single_quo = qut l2 res_qu 0 in                               (*Getting the single digit value of the quoitent*)
                             let store_result = multl (single_quo::[]) l2 in                   (*Multiplying the divisor with the number obtained above to get the number which has to be subtracted*)
-                            (*let rev_res_rq = rev_list store_result in                         
-                            let rev_eq_l1 = (extract_x (equal_len rev_res_rq l1) ) in
-                            let eq_l1 = rev_list rev_eq_l1 in
-                            let new_l1 =  sub_list eq_l1 l1 in*)
                             let modify_l1 = sub_list res_qu store_result in
                             let new_l1 = concat modify_l1 remaning_l1 in
-                            if((geql l2 l1) = 1)then ((rev_list (single_quo::ac)),new_l1)
-                            else div_list new_l1 l2 (single_quo::ac);;
+                            if((geql l2 l1) = 1)then ((rev_list (ac)),new_l1)
+                            else div_l new_l1 l2 (single_quo::ac);;
                             
 
+let div_list l1 l2 = let new_l1 = remove_zero l1 in
+                     let new_l2 = remove_zero l2 in
+                     div_l new_l1 new_l2 [];;
 
+(*Division Ends here*)                     
 
 
 (*Comparison operation defined for bigint*)
@@ -293,27 +307,47 @@ let leq b1 b2 = if((lt b1 b2) = true) then true
 
 (*Function for adding 2 bigint*)
  let add b1 b2 = match b1, b2 with
-               (Neg, y1), (Neg, y2) -> (Neg , (sum y1 y2))
-              |(NonNeg, y1), (NonNeg, y2) -> (NonNeg, (sum y1 y2)) 
-              |(Neg, y1), (NonNeg, y2) -> if((gtl y1 y2) = 1) then (Neg, (sub_list y1 y2)) else (NonNeg, (sub_list y2 y1))
-              |(NonNeg, y1), (Neg, y2) -> if((gtl y1 y2) = 1) then (NonNeg, (sub_list y1 y2)) else (Neg, (sub_list y2 y1));;
+               Bigint(Neg, y1), Bigint(Neg, y2) -> Bigint(Neg , (sum y1 y2))
+              |Bigint(NonNeg, y1), Bigint(NonNeg, y2) -> Bigint(NonNeg, (sum y1 y2)) 
+              |Bigint(Neg, y1), Bigint(NonNeg, y2) -> if((gtl y1 y2) = 1) then Bigint(Neg, (sub_list y1 y2)) else Bigint(NonNeg, (sub_list y2 y1))
+              |Bigint(NonNeg, y1), Bigint(Neg, y2) -> if((gtl y1 y2) = 1) then Bigint(NonNeg, (sub_list y1 y2)) else Bigint(Neg, (sub_list y2 y1));;
 
 
 (*Function for subtracting 2 bigint b1 - b2*)
 let sub b1 b2 = match b1, b2 with 
-              (Neg, y1), (Neg, y2) -> if((gtl y1 y2) = 1) then (Neg, (sub_list y1 y2))else (NonNeg, (sub_list y2 y1))
-             |(NonNeg, y1), (NonNeg, y2) -> if((gtl y1 y2) = 1) then (NonNeg, (sub_list y1 y2)) else (Neg, (sub_list y2 y1))
-             |(Neg, y1), (NonNeg, y2) -> (Neg, (sum y1 y2))
-             |(NonNeg, y1), (Neg, y2) -> (NonNeg, (sum y1 y2));;
+              Bigint(Neg, y1), Bigint(Neg, y2) -> if((gtl y1 y2) = 1) then Bigint(Neg, (sub_list y1 y2))else Bigint(NonNeg, (sub_list y2 y1))
+             |Bigint(NonNeg, y1), Bigint(NonNeg, y2) -> if((gtl y1 y2) = 1) then Bigint(NonNeg, (sub_list y1 y2)) else Bigint(Neg, (sub_list y2 y1))
+             |Bigint(Neg, y1), Bigint(NonNeg, y2) -> Bigint(Neg, (sum y1 y2))
+             |Bigint(NonNeg, y1), Bigint(Neg, y2) -> Bigint(NonNeg, (sum y1 y2));;
 
  
 (*Function for multiplying 2 bigint*)
 let mult b1 b2 = match b1, b2 with 
-                 (x1, y1), (x2, y2) -> if( x1 = x2 ) then (NonNeg, (multl y1 y2) ) else (Neg, (multl y1 y2));;
+                 Bigint(x1, y1), Bigint(x2, y2) -> if( x1 = x2 ) then Bigint(NonNeg, (multl y1 y2) ) else Bigint(Neg, (multl y1 y2));;
 
-(*Function for Quotient of 2 bigint*)
+(*Function for Quotient of 2 bigint b1 and b2 answer is b1/b2*)
+let div b1 b2 = match b1, b2 with 
+                 Bigint(NonNeg, y1), Bigint(NonNeg, y2) -> Bigint(NonNeg , extract_x(div_list y1 y2))
+                | Bigint(Neg, y1), Bigint(NonNeg, y2) -> let sumy = sum y1 y2 in
+                                             if((eql y1 y2) = 1) then Bigint(Neg , extract_x(div_list y1 y2))
+                                             else Bigint(Neg , extract_x(div_list sumy y2))
+                |Bigint(NonNeg, y1), Bigint(Neg, y2) -> Bigint(Neg, extract_x(div_list y1 y2))
+                |Bigint(Neg, y1), Bigint(Neg, y2) -> let sumy = sum y1 y2 in
+                                         if((eql y1 y2) = 1) then Bigint(NonNeg , extract_x(div_list y1 y2))
+                                         else Bigint(NonNeg , extract_x(div_list sumy y2));;
+                                            
 
-(*Function for Remainder of 2 bigint*)
+(*Function for Remainder of 2 bigint b1 and b2 answer is b1%b2*)
+let rem b1 b2 = match b1, b2 with 
+                 Bigint(NonNeg, y1), Bigint(NonNeg, y2) -> Bigint(NonNeg , extract_y(div_list y1 y2))
+                | Bigint(Neg, y1), Bigint(NonNeg, y2) -> let sumy = sum y1 y2 in
+                                             if((eql y1 y2) = 1) then Bigint(NonNeg , [0])
+                                             else Bigint(Neg , extract_y(div_list sumy y2))
+                |Bigint(NonNeg, y1), Bigint(Neg, y2) -> Bigint(Neg, extract_x(div_list y1 y2))
+                |Bigint(Neg, y1), Bigint(Neg, y2) -> let sumy = sum y1 y2 in
+                                         if((eql y1 y2) = 1) then Bigint(NonNeg , [0])
+                                         else Bigint(NonNeg , extract_y(div_list sumy y2));;
+
 
 (*Calculating the absolute value*)
 let abs x = match x with 
@@ -325,13 +359,4 @@ let unegation x = match x with
     Bigint(x,y) -> if(x=Neg)then (NonNeg,y)
                    else (Neg, y)
 
-
-
-let a1 = Bigint(Neg , [1;2;3])
-let b1 = Bigint(Neg , [1;2;3])
-let a2 = Bigint(NonNeg , [])
-let b2 = Bigint(NonNeg , [])
-
-let l1 = [2;9;9;0];;
-let l2 = [1;2;3];;
-let r = [2;9;9];;
+end
