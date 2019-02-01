@@ -3,4 +3,4 @@
   #load "a1.cmo";;
   open A0;;                   (* import the definition of module A0 into current namespace *)
   open A1;;
-  eval (Bigint(mk_big 5));;
+  eval (N(5));;
