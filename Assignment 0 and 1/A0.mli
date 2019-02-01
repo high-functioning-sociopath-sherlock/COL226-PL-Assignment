@@ -2,7 +2,6 @@
 This is a preliminary assignment which will be used in following assignments.  In this assignment, you will write in OCaml a BIGNUM package  where you will implement arithmetic for arbitrarily large numbers, using lists of digits to implement an integer.
 *)
 
-module type BigInt = sig
   type bigint = sign * int list
     and sign = Neg | NonNeg
   (* Representational invariant of the elements of the int list:
@@ -45,7 +44,6 @@ module type BigInt = sig
   val mk_big:  int -> bigint
 
   (* Define suitable exceptions when an operation is not defined. *)
-end
 
 (* Instructions for submission:
 #1 Your submission should have one file named structure_a0.ml which implements the interface as below.

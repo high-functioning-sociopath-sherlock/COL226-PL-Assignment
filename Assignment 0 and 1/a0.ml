@@ -1,5 +1,3 @@
-open Signature_a0
-module A0 : BigInt = struct
 
 type sign = Neg | NonNeg
 type bigint = Bigint of sign*int list
@@ -36,8 +34,8 @@ let rec int_to_list a acc = let temp = a/10 in
                        if(temp = 0) then re::acc else int_to_list temp (re::acc);;
                        
 (* function to convert int to bigint*)
-let rec mk_big a = if( a >= 0) then (NonNeg,(int_to_list a [])) 
-                   else (Neg,(int_to_list (-1*a) []));;
+let rec mk_big a = if( a >= 0) then Bigint(NonNeg,(int_to_list a [])) 
+                   else Bigint(Neg,(int_to_list (-1*a) []));;
 
 
 
@@ -248,7 +246,11 @@ let rec div_l l1 l2 ac = match l1, l2 with
 
 let div_list l1 l2 = let new_l1 = remove_zero l1 in
                      let new_l2 = remove_zero l2 in
-                     div_l new_l1 new_l2 [];;
+                     let ans = div_l new_l1 new_l2 [] in
+                     match ans with
+                      ([], y) -> ([0], y)
+                     |(x, []) -> (x, [0])
+                     |(x,y) -> (x,y);;
 
 (*Division Ends here*)                     
 
@@ -292,13 +294,13 @@ let gt b1 b2 = match b1 with
 (*Checnking if a >= b  for the given bigint a and b*)
 let geq b1 b2 = if((gt b1 b2) = true) then true 
                 else if((eq b1 b2) = true) then true 
-                else false
+                else false;;
 
 
 (*Checnking if a =< b  for the given bigint a and b*)
 let leq b1 b2 = if((lt b1 b2) = true) then true 
                 else if((eq b1 b2) = true) then true 
-                else false
+                else false;;
 
 
 
@@ -328,35 +330,24 @@ let mult b1 b2 = match b1, b2 with
 (*Function for Quotient of 2 bigint b1 and b2 answer is b1/b2*)
 let div b1 b2 = match b1, b2 with 
                  Bigint(NonNeg, y1), Bigint(NonNeg, y2) -> Bigint(NonNeg , extract_x(div_list y1 y2))
-                | Bigint(Neg, y1), Bigint(NonNeg, y2) -> let sumy = sum y1 y2 in
-                                             if((eql y1 y2) = 1) then Bigint(Neg , extract_x(div_list y1 y2))
-                                             else Bigint(Neg , extract_x(div_list sumy y2))
+                |Bigint(Neg, y1), Bigint(NonNeg, y2) -> Bigint(Neg, extract_x(div_list y1 y2))
                 |Bigint(NonNeg, y1), Bigint(Neg, y2) -> Bigint(Neg, extract_x(div_list y1 y2))
-                |Bigint(Neg, y1), Bigint(Neg, y2) -> let sumy = sum y1 y2 in
-                                         if((eql y1 y2) = 1) then Bigint(NonNeg , extract_x(div_list y1 y2))
-                                         else Bigint(NonNeg , extract_x(div_list sumy y2));;
-                                            
+                |Bigint(Neg, y1), Bigint(Neg, y2) -> Bigint(NonNeg, extract_y(div_list y1 y2));;                                            
 
 (*Function for Remainder of 2 bigint b1 and b2 answer is b1%b2*)
 let rem b1 b2 = match b1, b2 with 
                  Bigint(NonNeg, y1), Bigint(NonNeg, y2) -> Bigint(NonNeg , extract_y(div_list y1 y2))
-                | Bigint(Neg, y1), Bigint(NonNeg, y2) -> let sumy = sum y1 y2 in
-                                             if((eql y1 y2) = 1) then Bigint(NonNeg , [0])
-                                             else Bigint(Neg , extract_y(div_list sumy y2))
-                |Bigint(NonNeg, y1), Bigint(Neg, y2) -> Bigint(Neg, extract_x(div_list y1 y2))
-                |Bigint(Neg, y1), Bigint(Neg, y2) -> let sumy = sum y1 y2 in
-                                         if((eql y1 y2) = 1) then Bigint(NonNeg , [0])
-                                         else Bigint(NonNeg , extract_y(div_list sumy y2));;
+                | Bigint(Neg, y1), Bigint(NonNeg, y2) -> Bigint(Neg, extract_y(div_list y1 y2))
+                |Bigint(NonNeg, y1), Bigint(Neg, y2) -> Bigint(NonNeg,  extract_y(div_list y1 y2))
+                |Bigint(Neg, y1), Bigint(Neg, y2) -> Bigint(Neg,  extract_y(div_list y1 y2));;
 
 
 (*Calculating the absolute value*)
 let abs x = match x with 
-    Bigint(x, y) -> Bigint(NonNeg,y)
+    Bigint(x, y) -> Bigint(NonNeg,y);;
 
 
 (*Unary Negation*)
-let unegation x = match x with 
-    Bigint(x,y) -> if(x=Neg)then (NonNeg,y)
-                   else (Neg, y)
-
-end
+let minus x = match x with 
+    Bigint(x,y) -> if(x=Neg)then Bigint(NonNeg,y)
+                   else Bigint(Neg, y);;
