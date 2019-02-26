@@ -67,4 +67,3 @@ let rec stackmc st op = match op, st with
                 
                 |ABS::tl, x1::t -> stackmc ((abs x1)::t) tl
                 |ABS::tl, _ -> raise(Error "Stack is empty and operand cann't be fetched");;
-                         

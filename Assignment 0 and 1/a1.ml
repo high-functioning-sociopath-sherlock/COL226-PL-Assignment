@@ -3,7 +3,7 @@ open A0
 exception Error of string;;
 
 
-type  exptree =  N of int | Plus of exptree * exptree 
+type  exptree =     N of int | Plus of exptree * exptree 
                              | Minus of exptree * exptree 
                              | Mult of exptree * exptree 
                              | Div of exptree * exptree 
@@ -67,4 +67,3 @@ let rec stackmc st op = match op, st with
                 
                 |ABS::tl, x1::t -> stackmc ((abs x1)::t) tl
                 |ABS::tl, _ -> raise(Error "Stack is empty and operand cann't be fetched");;
-                         
