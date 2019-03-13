@@ -208,8 +208,8 @@ let rec eval t rho = match t with
           |Project((i, n), t)-> (let elist = (eval t rho )in
                                 let rec get_nth list1 count = (match list1, count with
                                                  | [], _ -> raise (Error "get_nth")
-                                                 | _, nn when (nn < 0) -> raise (Error "get_nth")
-                                                 | (x::_), 0 -> x
+                                                 | _, nn when (nn <= 0) -> raise (Error "get_nth")
+                                                 | (x::_), 1 -> x
                                                  | (x::xs), nn -> (get_nth xs (nn - 1)))  in
                                 (match elist with 
                                  Tup(a, alist) when (a = n) -> (get_nth alist i) 
@@ -258,11 +258,15 @@ let rec compile t  = match t with
 
             
             (* creating n tuples *)
-            |Tuple(a, l) ->( let rec comlist ls aa = (match ls with 
+            |Tuple(a, l) ->(let rec revlist l st = (match l with 
+                                                    | []-> st
+                                                    | h::t -> revlist t (h::st)) in
+                      
+                             let rec comlist ls aa = (match ls with 
                                               |[] -> [TUPLE (aa)]
-                                              | h::tl -> (comlist tl a) @ compile(h) )in
+                                              | h::tl -> (comlist tl a) @ (revlist (compile(h) ) [] ) ) in
 
-                            comlist l a
+                            revlist (comlist l a) [] 
             )
 
             (*projecting the i-th component of an expression (which evaluates to an n-tuple, and 1 <= i <= n) *)
@@ -357,3 +361,42 @@ let rec stackmc st rho op = match op, st with
                 (*Parentheses and other operations*)
                 |PAREN::tl, x1::t -> stackmc (x1::t) rho tl
                 |PAREN::tl, _ ->raise(Error "Stack is empty and operand cann't be fetched")
+
+                (*Tuple*)
+                |TUPLE(a)::tl, t -> (let rec makelist t count = (match t, count with
+                                                                 |[], c when(c>0)->raise(Error "Answer stack not of enought length")
+                                                                 |[], c when(c=0 )-> []
+                                                                 |h::t1, c -> h::makelist t1 (c-1) ) in
+                                                                 
+                                                                 let rec revlist l st = (match l with 
+                                                                                        | []-> st
+                                                                                        | h::t -> revlist t (h::st)) in
+
+                                    stackmc (Tup(a,revlist (makelist t a) [])::t) rho tl )
+                |TUPLE(a)::tl, _ -> raise(Error "Stack is empty and operand cann't be fetched")
+
+                (*Projection*)
+                |PROJ(i, n)::tl, h::t -> let rec get_nth list1 count = (match list1, count with
+                                                 | [], _ -> raise (Error "get_nth")
+                                                 | _, nn when (nn <= 0) -> raise (Error "get_nth")
+                                                 | (x::_), 1 -> x
+                                                 | (x::xs), nn -> (get_nth xs (nn - 1)))  in
+
+                                          let geti h1 n1 i1 = (match h1 with
+                                                                 | Tup(a, b) when (a = n1) -> (get_nth b i1)
+                                                                 | _ -> raise(Error "Tuple of appropriate length not found") ) in
+                                          
+                                          (geti h n i) 
+                |PROJ(i, n)::tl, _ -> raise(Error "Stack is empty and operand cann't be fetched")
+
+                (* If then Else*)
+                |IFTE::tl, x1::x2::x3::t -> (match x1 with 
+                                   |Bool(a) -> if(a = true)then ( stackmc (x2::t) rho tl ) 
+                                               else ( stackmc (x3::t) rho tl )
+                                   |_ -> raise(Error "Condition not of bool type") )
+                |IFTE::tl, _ -> raise(Error "Stack is empty and operand cann't be fetched")
+
+
+
+                
+                            
