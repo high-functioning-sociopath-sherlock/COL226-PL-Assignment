@@ -13,10 +13,10 @@ let b = Sub(N(-5),N(3))
 let a = InParen(Abs(N(-5)))
 let c = IfThenElse(t,a,b)
 
-let rho s = match s with
-   "x" -> Num (A0.mk_big 5)
-|  "y" -> Bool true
-|  "z" -> Tup (3, [Num (A0.mk_big 5); Bool true; Num (A0.mk_big 1)])
+let rho s = match s with 
+   "X" -> NumVal 5
+|  "Y" -> BoolVal true
+|  "Z" -> TupVal (3, [NumVal 5; BoolVal true; NumVal 1]);;
 
 
 let d =  IfThenElse(t,b,a)

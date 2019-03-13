@@ -44,14 +44,17 @@ type opcode = VAR of string | NCONST of bigint | BCONST of bool | ABS | UNARYMIN
   | PLUS | MINUS | MULT | DIV | REM | CONJ | DISJ | EQS | GTE | LTE | GT | LT
   | PAREN | IFTE | TUPLE of int | PROJ of int*int
 
+(* The type of value returned by the definitional interpreter. *)
+type value = NumVal of int | BoolVal of bool | TupVal of int * (value list)
+
 (* The language should contain the following types of expressions:  integers and booleans *)
 type answer = Num of bigint | Bool of bool | Tup of int * (answer list)
 
 (* Input is given as string *)
 let rho s = match s with 
-   "X" -> Num (A0.mk_big 5)
-|  "Y" -> Bool true
-|  "Z" -> Tup (3, [Num (A0.mk_big 5); Bool true; Num (A0.mk_big 1)]);;
+   "X" -> NumVal 5
+|  "Y" -> BoolVal true
+|  "Z" -> TupVal (3, [NumVal 5; BoolVal true; NumVal 1]);;
 
 
 
@@ -82,68 +85,68 @@ let disjuction a b = match a, b with
 (*This function calculates the value of the expression tree*)
 let rec eval t rho = match t with
           |Var(st)-> (rho st) (* variables starting with a Capital letter, represented as alphanumeric strings with underscores (_) and apostrophes (') *)
-          |N(a)-> Num(mk_big a)  (* Integer constant *)
-          |B(b)-> Bool(b)         (* Boolean constant *)
+          |N(a)-> NumVal(a)  (* Integer constant *)
+          |B(b)-> BoolVal(b)         (* Boolean constant *)
 
           (*Calculating the answer for bigint here*)
           |Add(t1, t2) -> ( let e1 = eval t1 rho in
                            let e2 = eval t2 rho in 
                            match e1, e2 with
-                           | Num(a), Num(b)-> Num(add a b)
+                           | NumVal(a), NumVal(b)-> NumVal(a + b)
                            | _, _  -> raise(Error "Type not matched"))
                            
           |Sub(t1, t2) -> (let e1 = eval t1 rho in
                             let e2 = eval t2 rho in 
                             match e1, e2 with
-                           | Num(a), Num(b)-> Num(sub a b)
+                           | NumVal(a), NumVal(b)-> NumVal(a - b)
                            | _, _  -> raise(Error "Type not matched") )
 
           |Mult(t1, t2) -> (let e1 = eval t1 rho in
                            let e2 = eval t2 rho in                            
                            match e1, e2 with
-                           | Num(a), Num(b)-> Num(mult a b)
+                           | NumVal(a), NumVal(b)-> NumVal(a*b)
                            | _, _  -> raise(Error "Type not matched") )
 
           |Div(t1, t2) -> (let e1 = eval t1 rho in
                           let e2 = eval t2 rho in                            
                           match e1, e2 with
-                          | Num(a), Num(b)-> Num(div a b)
+                          | NumVal(a), NumVal(b)-> NumVal(a/b)
                           | _, _  -> raise(Error "Type not matched"))
 
           |Rem(t1, t2) -> (let e1 = eval t1 rho in
                           let e2 = eval t2 rho in                            
                           match e1, e2 with
-                           | Num(a), Num(b)-> Num(rem a b)
+                           | NumVal(a), NumVal(b)-> NumVal( a mod b)
                            | _, _  -> raise(Error "Type not matched"))
 
           |Negative(t1) -> (let e1 = eval t1 rho in
                            match e1 with
-                           |Num(a) -> Num(minus a)
+                           |NumVal(a) -> NumVal( (-1)*a)
                            |_ -> raise(Error "Type must be bigint"))
 
           |Abs(t1) -> (let temp = eval t1 rho in
                       match temp with 
-                      |Num(a)-> Num(abs a)
+                      |NumVal(a)-> NumVal(Pervasives.abs a)
                       |_ -> raise(Error "Type must be bigint"))
 
           (* binary operators on booleans *)
           |Conjunction(t1, t2)-> (let e1 = eval t1 rho in
                                 let e2 = eval t2 rho in
                                 (match e1, e2 with
-                                | Bool(a), Bool(b)-> Bool(a && b)
+                                | BoolVal(a), BoolVal(b)-> BoolVal(a && b)
                                 | _, _ -> raise(Error "Type mismatch") ))
                                 
 
           |Disjunction(t1, t2)-> (let e1 = eval t1 rho in 
                                  let e2 = eval t2 rho in 
                                  (match e1, e2 with
-                                | Bool(a), Bool(b)-> Bool(a || b)
+                                | BoolVal(a), BoolVal(b)-> BoolVal(a || b)
                                 | _, _ -> raise(Error "Type mismatch") ))
 
           |Not(t)->(let e = eval t rho in
                    (match e with 
-                   |Bool(a) -> if(a = true)then Bool(false)
-                            else Bool(true)
+                   |BoolVal(a) -> if(a = true)then BoolVal(false)
+                            else BoolVal(true)
                    |_ ->raise(Error "type must be of bool type")
                    ))
 
@@ -152,31 +155,31 @@ let rec eval t rho = match t with
           |Equals(t1, t2)-> (let e1 = eval t1 rho in     (* = *)
                             let e2 = eval t2 rho in
                             match e1, e2 with
-                           | Num(a), Num(b)-> Bool(eq a b)
+                           | NumVal(a), NumVal(b)-> BoolVal(a=b)
                            | _, _  -> raise(Error "Type not matched"))
                             
           |GreaterTE(t1, t2)-> (let e1 = eval t1 rho in  (* >= *)
                                let e2 = eval t2 rho in
                                match e1, e2 with
-                              | Num(a), Num(b)-> Bool(geq a b)
+                              | NumVal(a), NumVal(b)-> BoolVal(a >=b)
                               | _, _  -> raise(Error "Type not matched"))
                                
           |LessTE(t1, t2)-> (let e1 = eval t1 rho in     (* <= *)
                             let e2 = eval t2 rho in
                             match e1, e2 with
-                            | Num(a), Num(b)-> Bool(leq a b)
+                            | NumVal(a), NumVal(b)-> BoolVal( a<=b )
                             | _, _  -> raise(Error "Type not matched"))
 
           |GreaterT(t1, t2)-> (let e1 = eval t1 rho in   (* > *)
                               let e2 = eval t2 rho in
                               match e1, e2 with
-                             | Num(a), Num(b)-> Bool(gt a b)
+                             | NumVal(a), NumVal(b)-> BoolVal( a>b )
                              | _, _  -> raise(Error "Type not matched"))
 
           |LessT(t1, t2)-> (let e1 = eval t1 rho in      (* < *)
                            let e2 = eval t2 rho in
                            match e1, e2 with
-                           | Num(a), Num(b)-> Bool(lt a b)
+                           | NumVal(a), NumVal(b)-> BoolVal(a<b)
                            | _, _  -> raise(Error "Type not matched"))
 
           (* a conditional expression *)
@@ -184,10 +187,10 @@ let rec eval t rho = match t with
                                     let e2 = eval t2 rho in 
                                     let e3 = eval t3 rho in 
                                    ( match e1 with
-                                    |Bool(c) -> (match e2, e3 with
-                                                   |Bool(a), Bool(b) -> if(c = true)then e2
+                                    |BoolVal(c) -> (match e2, e3 with
+                                                   |BoolVal(a), BoolVal(b) -> if(c = true)then e2
                                                                   else e3
-                                                   |Num(a), Num(b) -> if(c = true)then e2
+                                                   |NumVal(a), NumVal(b) -> if(c = true)then e2
                                                                   else e3
                                                    | _, _ -> raise(Error "Output must be of same type") )
                                     | _ -> raise(Error "Condition must be of type bool") ))
@@ -201,7 +204,7 @@ let rec eval t rho = match t with
                          | [] -> []
                          | h::tl -> (eval h rho)::(cal tl) ) in
 
-                         Tup(a, (cal t))
+                         TupVal(a, (cal t))
                          )
 
           (* projecting the i-th component of an expression (which evaluates to an n-tuple, and 1 <= i <= n) *)
@@ -212,7 +215,7 @@ let rec eval t rho = match t with
                                                  | (x::_), 1 -> x
                                                  | (x::xs), nn -> (get_nth xs (nn - 1)))  in
                                 (match elist with 
-                                 Tup(a, alist) when (a = n) -> (get_nth alist i) 
+                                 TupVal(a, alist) when (a = n) -> (get_nth alist i) 
                                  | _ -> raise(Error "not correct format"))
                                  )
 

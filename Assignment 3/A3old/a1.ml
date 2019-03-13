@@ -1,7 +1,9 @@
+(* Dummy implementation of A1 *)
 open A0
+exception Not_implemented
 
 (* abstract syntax *)
-type  exptree =
+type  exptree =  
   Var of string (* variables starting with a Capital letter, represented as alphanumeric strings with underscores (_) and apostrophes (') *)
   | N of int      (* Integer constant *)
   | B of bool     (* Boolean constant *)
@@ -39,17 +41,9 @@ type opcode = VAR of string | NCONST of bigint | BCONST of bool | ABS | UNARYMIN
   | PLUS | MINUS | MULT | DIV | REM | CONJ | DISJ | EQS | GTE | LTE | GT | LT
   | PAREN | IFTE | TUPLE of int | PROJ of int*int
 
-(* The type of value returned by the definitional interpreter. *)
-type value = NumVal of int | BoolVal of bool | TupVal of int * (value list)
-
-(* The type of value returned by the definitional interpreter. *)
-type value = NumVal of int | BoolVal of bool | TupVal of int * (value list)
-(* the definitional interpreter *)
-val eval : exptree -> (string -> value) -> value
-
 (* The language should contain the following types of expressions:  integers and booleans *)
 type answer = Num of bigint | Bool of bool | Tup of int * (answer list)
-(* the stack machine *)
-val stackmc: (answer list) -> (string -> answer) -> (opcode list) -> answer
-(* the compiler *)
-val compile: exptree -> opcode list
+
+let rec eval ex rho = raise Not_implemented
+let stackmc stk rho pgm = raise Not_implemented
+let compile ex = raise Not_implemented
