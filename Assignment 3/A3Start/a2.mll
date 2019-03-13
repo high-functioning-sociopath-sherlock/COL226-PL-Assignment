@@ -8,30 +8,32 @@
 |  MINUS               (* arithmetic minus, "-" *)
 |  MUL                 (* arithmetic multiply, "*" *)
 |  DIV                 (* integer div, "div" *)
-|  MOD                 (* remainder, "mod" *)
-|  EXP                 (* exponentiation, "^" *)
+|  REM                 (* remainder, "mod" *)
+|  TILDA                 (* unaryminus, "~" *)
 
 |  LP                  (* left paren, "(" *)
 |  RP                  (* right paren, ")" *)
 
 |  NOT                 (* boolean NOT, "not" *)
-|  AND                 (* boolean AND, "/\ " *)
-|  OR                  (* boolean OR, "\/" *)
+|  CONJ                (* boolean AND, "/\ " *)
+|  DISJ                (* boolean OR, "\/" *)
+
 
 |  EQ                  (* equal to, "=" *)
-|  GTA                 (* greater than, ">" *)
-|  LTA                 (* less than, "<" *)
-|  GEQ                 (* greater than/equal to, ">=" *)
-|  LEQ                 (* less than/equal to, "<=" *)
+|  GT                  (* greater than, ">" *)
+|  LT                  (* less than, "<" *)
+
 
 |  IF                  (* keyword "if" *)
 |  THEN                (* keyword "then" *)
 |  ELSE                (* keyword "else" *)
 |  FI                  (* keyword "fi "*)
 
-|  ID of string        (* variable identifier, alphanumeric string with first char lowercase *)
-|  DEF                 (* definition construct, "def" *)
-|  DELIMITER;;         (* delimiter, ";" *)
+| COMMA                (* comma for tuples ","*)
+| PROJ                 (*Projection*)
+| EOF                  (*End of code*)
+
+|  ID of string;;        (* variable identifier, alphanumeric string with first char lowercase *)
 
 exception Foo of string 
 
@@ -56,18 +58,16 @@ let letter = sletter | lletter
 
 (*Unary and Binary operators for integer*)
 let absolute = "abs"
-let plus = ("+")(" " | eof)
-let minus = ("-")(" " | eof)
-let mult = ("*")(" " | eof)
-let div = ("div")(" " | eof)
-let mod = ("mod")(" " | eof)
-let exp = ("^")(" " | eof)
+let plus = ("+")
+let minus = ("-")
+let mult = ("*")
+let div = ("div")
+let mod = ("rem")
+let exp = ("^")
 
 (*Comparator operator for integers*)
 let gta = (">")
 let lta = ("<")
-let geq = (">=")
-let leq = ("<=")
 let eq = ("=")
 
 (*Parantheses*)
@@ -76,10 +76,9 @@ let lp = '('
 
 
 (*Boolean operators and symbols for true and false*)
-let booltrue = 'T'
-let boolfalse = 'F'
-let boolnot = ("not")(" " | eof)
-let booland = ("/\ ")
+let booli = 'T' | 'F'
+let boolnot = ("not")
+let booland = ("/\\")
 let boolor = "\\/"
 
 (*keywords for conditional operator*)
@@ -89,22 +88,21 @@ let celse = "else "
 let cfi = "fi "
 
 (*EOF, Whitespace, Def and all remaining decalred here*)
-let cdef = "def "
-let delimiter = ';'
 let whitespace = ' '
 
 
 (*Regular expression for Identifier*)
-let identifier = (sletter+)(letter |digits)*
+let underscore = '_'
+let appostro = '\''
+let identifier = (lletter+)(letter |digits )*
 
 (*Regular expression for Integer*)
-let sign = '-' | '+'
+let sign = '~'
 let integers = (sign?)((ndigit+)(digit*) | '0')
 
 rule main = parse
 | integers as i       { INT (removeplus i)}
-| booltrue            { TRUE }
-| boolfalse           { FALSE }
+| booli               { BOOL }
 
 | absolute            { ABS }
 | plus                { PLUS }
@@ -139,7 +137,7 @@ rule main = parse
 
 | _                   { raise(Foo "Bad Input")}
 
-{ let scanner s = main ( Lexing.from_string s)  }
+
 
 
 

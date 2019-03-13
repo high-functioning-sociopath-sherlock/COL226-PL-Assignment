@@ -17,6 +17,10 @@
 %start main
 %type <A1.exptree> main /* Return type */
 %%
+/*
+DESIGN a grammar for a simple expression language, taking care to enforce precedence rules (e.g., BODMAS)
+The language should contain the following types of expressions:  integers and booleans.
+*/
 
 main:
     cmp_expression EOL                 { $1 }          /* $n on the rhs returns the value for nth symbol in the grammar on lhs */
@@ -103,14 +107,10 @@ ifthen_expression:
 ;
 
 constant:
-    ID                                  { VAR($1) }
+ID { VAR($1) }
     |INT                                 { NCONST($1) }
 ;
 /*
 DESIGN a grammar for a simple expression language, taking care to enforce precedence rules (e.g., BODMAS)
 The language should contain the following types of expressions:  integers and booleans.
 */
-
-main:
-  INT EOF   { N($1) }
-;
