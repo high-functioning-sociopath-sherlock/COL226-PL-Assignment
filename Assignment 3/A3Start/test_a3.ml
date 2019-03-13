@@ -28,9 +28,6 @@ let parser s binding =
     (result, (A1.eval result binding), (A1.stackmc [] binding (A1.compile result)))
 ;;
 
-let mainparser s binding = A3.main A2.read (Lexing.from_string s);;
-
-
 (* Input is given as string *)
 let rho s = match s with 
    "X" -> Num (A0.mk_big 5)
