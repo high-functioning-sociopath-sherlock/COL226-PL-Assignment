@@ -1,12 +1,11 @@
 { type token =
 |   INT of int          (* integer constant, positive or negative w/o leading zeros *)
-|  TRUE                (* boolean constant "T" *)
-|  FALSE               (* boolean constant "F" *)
+|  BOOL of bool                (* boolean constant "T" *)
 
 |  ABS                 (* unary operator, "abs" *)
 |  PLUS                (* arithmetic plus, "+" *)
 |  MINUS               (* arithmetic minus, "-" *)
-|  MUL                 (* arithmetic multiply, "*" *)
+|  TIMES                 (* arithmetic multiply, "*" *)
 |  DIV                 (* integer div, "div" *)
 |  REM                 (* remainder, "mod" *)
 |  TILDA                 (* unaryminus, "~" *)
@@ -55,6 +54,10 @@ let sletter = ['a'-'z']
 let lletter = ['A'-'Z']
 let letter = sletter | lletter
 
+(*Regular expression for Integer*)
+(* let sign = '~' *)
+let integers = ((ndigit+)(digit*) | '0')
+
 (*Unary and Binary operators for integer*)
 let absolute = "abs"
 let plus = ("+")
@@ -95,12 +98,10 @@ let underscore = '_'
 let appostro = '\''
 let identifier = (lletter+)(letter |digits |underscore |appostro)*
 
-(*Regular expression for Integer*)
-(* let sign = '~' *)
-let integers = ((ndigit+)(digit*) | '0')
 
 rule main = parse
-| integers as i       { INT (int_of_string i)}
+|eof                  { EOF::[] }
+| integers as i       { INT (int_of_string i):: main lexbuf}
 | boolt               { (BOOL (true)) :: main lexbuf}
 | boolf               { (BOOL (false)) :: main lexbuf}
 
