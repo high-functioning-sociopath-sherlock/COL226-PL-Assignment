@@ -192,6 +192,8 @@ let rec eval t rho = match t with
                                                                   else e3
                                                    |NumVal(a), NumVal(b) -> if(c = true)then e2
                                                                   else e3
+                                                   | TupVal(a,a1), TupVal(b,b1) -> if(c = true)then e2
+                                                                  else e3
                                                    | _, _ -> raise(Error "Output must be of same type") )
                                     | _ -> raise(Error "Condition must be of type bool") ))
                                     
@@ -366,9 +368,9 @@ let rec stackmc st rho op = match op, st with
                 |PAREN::tl, _ ->raise(Error "Stack is empty and operand cann't be fetched")
 
                 (*Tuple*)
-                |TUPLE(a)::tl, t -> (let rec makelist t count = (match t, count with
+                |TUPLE(a)::tl, t ->  (let rec makelist t count = (match t, count with
                                                                  |[], c when(c>0)->raise(Error "Answer stack not of enought length")
-                                                                 |[], c when(c=0 )-> []
+                                                                 |_, c when(c=0 )-> []
                                                                  |h::t1, c -> h::makelist t1 (c-1) ) in
                                                                  
                                                                  let rec revlist l st = (match l with 
@@ -379,7 +381,7 @@ let rec stackmc st rho op = match op, st with
                 |TUPLE(a)::tl, _ -> raise(Error "Stack is empty and operand cann't be fetched")
 
                 (*Projection*)
-                |PROJ(i, n)::tl, h::t -> let rec get_nth list1 count = (match list1, count with
+                |PROJ(i, n)::tl, h::t ->let rec get_nth list1 count = (match list1, count with
                                                  | [], _ -> raise (Error "get_nth")
                                                  | _, nn when (nn <= 0) -> raise (Error "get_nth")
                                                  | (x::_), 1 -> x
@@ -389,7 +391,7 @@ let rec stackmc st rho op = match op, st with
                                                                  | Tup(a, b) when (a = n1) -> (get_nth b i1)
                                                                  | _ -> raise(Error "Tuple of appropriate length not found") ) in
                                           
-                                          (geti h n i) 
+                                          (geti h (n-1) i) 
                 |PROJ(i, n)::tl, _ -> raise(Error "Stack is empty and operand cann't be fetched")
 
                 (* If then Else*)

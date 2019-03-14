@@ -29,14 +29,14 @@ File "a1.ml", line 54, characters 12-124:
 Warning 8: this pattern-matching is not exhaustive.
 Here is an example of a case that is not matched:
 ""
-File "a1.ml", line 318, characters 97-98:
+File "a1.ml", line 320, characters 97-98:
 Warning 20: this argument will not be used by the function.
-File "a1.ml", line 369, characters 64-406:
+File "a1.ml", line 371, characters 65-406:
 Warning 8: this pattern-matching is not exhaustive.
 Here is an example of a case that is not matched:
 ([], _)
 (However, some guarded clause may match this value.)
-File "a1.ml", line 379, characters 17-32:
+File "a1.ml", line 381, characters 17-32:
 Warning 11: this match case is unused.
 # Target: a2.mll, tags: { extension:mll, file:a2.mll, lexer, ocaml, ocamllex, quiet }
 /usr/bin/ocamllex.opt -q a2.mll

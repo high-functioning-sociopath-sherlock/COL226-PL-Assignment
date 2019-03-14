@@ -75,7 +75,7 @@ let plus = ("+")
 let minus = ("-")
 let mult = ("*")
 let div = ("div")
-let mod = ("rem")
+let mod = ("mod")
 
 (*Comparator operator for integers*)
 let gta = (">")
@@ -95,10 +95,10 @@ let booland = ("/\\")
 let boolor = "\\/"
 
 (*keywords for conditional operator*)
-let cif = "if "
-let cthen = "then "
-let celse = "else "
-let cfi = "fi "
+let cif = "if"
+let cthen = "then"
+let celse = "else"
+let cfi = "fi"
 
 (*EOF, Whitespace, Def and all remaining decalred here*)
 let whitespace = ' '
@@ -110,20 +110,24 @@ let appostro = '\''
 let identifier = (lletter+)(letter |digits |underscore |appostro)*
 
 (*Regular expression for Integer*)
-(* let sign = '~' *)
+let sign = '~'
 let integers = ((ndigit+)(digit*) | '0')
 
 rule read = parse
+| eof                 { EOF }
 | integers as i       { INT (int_of_string i)}
 | boolt               { BOOL (true)}
 | boolf               { BOOL (false)}
 
 | absolute            { ABS }
+| "proj"              { PROJ }
 | plus                { PLUS }
 | minus               { MINUS }
 | mult                { TIMES }
 | div                 { DIV }
 | mod                 { REM }
+| ','                 {COMMA}
+| sign                {TILDA}
 
 | rp                  { RP }
 | lp                  { LP }

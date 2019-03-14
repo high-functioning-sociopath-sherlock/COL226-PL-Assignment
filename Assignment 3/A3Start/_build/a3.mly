@@ -116,13 +116,14 @@ tuple_expression:
 ;       
 
 expression:
-       bool_disjunction COMMA expression     { let (x, y) = $3 in (x+1, $1::y) }
-     | bool_disjunction                      { (0, []) }
+       expression COMMA bool_disjunction     { let (x, y) = $1 in (x+1, $3::y) }
+     | bool_disjunction                      { (1, [$1]) }
 ;
 
 paren_expression:
        LP bool_disjunction RP             { InParen($2) }
-     | constant                          { $1 } 
+     | LP RP                              { Tuple(0,[]) }
+     | constant                           { $1 } 
 ;
 
 constant:
