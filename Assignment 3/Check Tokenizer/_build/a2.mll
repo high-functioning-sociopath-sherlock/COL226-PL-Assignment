@@ -1,18 +1,4 @@
-{
-  open A3
-  exception Not_implemented
-	exception Foo of string
-}
-
-(*
-  Below is a dummy implementation. Please note the following
-  - Tokens are defined in A3.mly
-  - Return type is token and not token list
-  - End of buffer is indicated by EOF token below
-  - There is no trailer. The scanner function is written in the wrapper file (test_a3.ml)
-*)
-
-(* { type token =
+{ type token =
 |   INT of int          (* integer constant, positive or negative w/o leading zeros *)
 |  TRUE                (* boolean constant "T" *)
 |  FALSE               (* boolean constant "F" *)
@@ -52,12 +38,12 @@
 exception Foo of string 
 
 
-(* let removeplus t = let temp = String.length t in
+let removeplus t = let temp = String.length t in
 					if String.get t 0 == '+'
 					then int_of_string(String.sub t 1 (temp - 1))
 					else
-					int_of_string t *)
-} *)
+					int_of_string t
+}
 
 
 
@@ -113,39 +99,42 @@ let identifier = (lletter+)(letter |digits |underscore |appostro)*
 (* let sign = '~' *)
 let integers = ((ndigit+)(digit*) | '0')
 
-rule read = parse
+rule main = parse
 | integers as i       { INT (int_of_string i)}
-| boolt               { BOOL (true)}
-| boolf               { BOOL (false)}
+| boolt               { (BOOL (true)) :: main lexbuf}
+| boolf               { (BOOL (false)) :: main lexbuf}
 
-| absolute            { ABS }
-| plus                { PLUS }
-| minus               { MINUS }
-| mult                { TIMES }
-| div                 { DIV }
-| mod                 { REM }
+| absolute            { ABS :: main lexbuf }
+| plus                { PLUS :: main lexbuf }
+| minus               { MINUS :: main lexbuf }
+| mult                { TIMES :: main lexbuf }
+| div                 { DIV :: main lexbuf }
+| mod                 { REM :: main lexbuf }
 
-| rp                  { RP }
-| lp                  { LP }
+| rp                  { RP :: main lexbuf }
+| lp                  { LP :: main lexbuf }
 
-| booland             { CONJ }
-| boolor              { DISJ }
-| boolnot             { NOT }
+| booland             { CONJ :: main lexbuf }
+| boolor              { DISJ :: main lexbuf }
+| boolnot             { NOT :: main lexbuf }
 
-| gta                 { GT }
-| lta                 { LT }
-| eq                  { EQ }
+| gta                 { GT :: main lexbuf }
+| lta                 { LT :: main lexbuf }
+| eq                  { EQ :: main lexbuf }
 
-| cif                 { IF }
-| cthen               { THEN }
-| celse               { ELSE }
-| cfi                 { FI }
+| cif                 { IF :: main lexbuf }
+| cthen               { THEN :: main lexbuf }
+| celse               { ELSE :: main lexbuf }
+| cfi                 { FI :: main lexbuf }
 
-| identifier as r     { ID r }
+| identifier as r     { (ID r):: main lexbuf }
 
-| whitespace          { read lexbuf}
+| whitespace          { main lexbuf}
 
 | _                   { raise(Foo "Bad Input")}
+
+
+{ let scanner s = main ( Lexing.from_string s)  }
 
 
 

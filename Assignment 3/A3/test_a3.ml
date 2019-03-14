@@ -37,4 +37,4 @@ let rho s = match s with
 |  "Y" -> Bool true
 |  "Z" -> Tup (3, [Num (A0.mk_big 5); Bool true; Num (A0.mk_big 1)]);;
 
-let _ = (mainparser "5+3" rho);;
+let _ = (mainparser "T" rho);;
