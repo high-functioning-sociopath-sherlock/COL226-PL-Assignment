@@ -93,14 +93,13 @@ div_expression:
 
 abs_expression:
       ABS abs_expression                  { Abs($2) }
-    | TILDA abs_expression                { Negative($2) }
-    | ifthen_expression                   { $1 }
+    | neg_expression                      { $1 }
 ;
 
-/* neg_expression:
+neg_expression:
       TILDA neg_expression               { Negative($2) }
     | ifthen_expression                  { $1 }
-; */
+;
 
 ifthen_expression:
       IF bool_disjunction THEN bool_disjunction ELSE bool_disjunction FI { IfThenElse($2,$4,$6)}

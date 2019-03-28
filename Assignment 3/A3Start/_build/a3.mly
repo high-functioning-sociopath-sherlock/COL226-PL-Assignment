@@ -93,13 +93,14 @@ div_expression:
 
 abs_expression:
       ABS abs_expression                  { Abs($2) }
-    | neg_expression                      { $1 }
+    | TILDA abs_expression                { Negative($2) }
+    | ifthen_expression                   { $1 }
 ;
 
-neg_expression:
+/* neg_expression:
       TILDA neg_expression               { Negative($2) }
     | ifthen_expression                  { $1 }
-;
+; */
 
 ifthen_expression:
       IF bool_disjunction THEN bool_disjunction ELSE bool_disjunction FI { IfThenElse($2,$4,$6)}
@@ -116,7 +117,7 @@ tuple_expression:
 ;       
 
 expression:
-       expression COMMA bool_disjunction     { let (x, y) = $1 in (x+1, $3::y) }
+       bool_disjunction COMMA expression     { let (x, y) = $3 in (x+1, $1::y) }
      | bool_disjunction                      { (1, [$1]) }
 ;
 

@@ -1,13 +1,5 @@
 %{
     open A1
-	exception Foo of string  
-
-    let getf a = match a with
-                |(a1, a2) -> a1
-
-    
-    let gets a = match a with
-                |(a1, a2) -> a2
 %}
 
 /*
@@ -21,14 +13,23 @@
 %token <int> INT
 %token <bool> BOOL
 %token <string> ID
-%token ABS TILDA NOT PLUS MINUS TIMES DIV REM CONJ DISJ EQ GT LT LP RP IF THEN ELSE FI COMMA PROJ EOF
-%start main
-%type <A1.exptree> main /* Return type */
+%token ABS TILDA NOT PLUS MINUS TIMES DIV REM CONJ DISJ EQ GT LT LP RP IF THEN ELSE FI COMMA PROJ
+LET IN END BACKSLASH DOT DEF SEMICOLON PARALLEL LOCAL EOF
+%start def_parser exp_parser
+%type <A1.definition> def_parser /* Returns definitions */
+%type <A1.exptree> exp_parser /* Returns expression */
 %%
-/*
-DESIGN a grammar for a simple expression language, taking care to enforce precedence rules (e.g., BODMAS)
-The language should contain the following types of expressions:  integers and booleans.
-*/
+/* The grammars written below are dummy. Please rewrite it as per the specifications. */
+
+/* Implement the grammar rules for expressions, which may use the parser for definitions */
+exp_parser:
+  INT EOF   { N($1) }
+;
+
+/* Implement the grammar rules for definitions, which may use the parser for expression  */
+def_parser:
+  DEF ID EQ INT EOF { Simple($2, N($4)) }
+;
 
 main:
       bool_disjunction EOF             { $1 }          /* $n on the rhs returns the value for nth symbol in the grammar on lhs */
@@ -65,12 +66,6 @@ as_expression:
     | r_expression                     { $1 }
 ;
 
-/* add_expression:
-    LP sub_expression RP                 { PAREN($1,$3) }
-    |add_expression PLUS rem_expression  { PLUS($1,$3) }
-    |rem_expression                     { $1 }
-; */
-
 r_expression:
       r_expression REM abs_expression    { Rem($1,$3) }
     | r_expression TIMES abs_expression  { Mult($1,$3) }
@@ -78,29 +73,11 @@ r_expression:
     | abs_expression                     { $1 }
 ;
 
-/* mult_expression:
-     LP sub_expression RP                 { PAREN($1,$3) }
-     |mult_expression TIMES div_expression { MULT($1,$3) } 
-     |div_expression                      { $1 }
-;
-
-div_expression:
-    LP sub_expression RP                 { PAREN($1,$3) }   
-    |div_expression DIV abs_expression   { DIV($1,$3) }
-    |ABS abs_expression                  { ABS($1) }
-    |TILDA neg_expression                { UNARYMINUS($1) }
-; */
-
 abs_expression:
       ABS abs_expression                  { Abs($2) }
     | TILDA abs_expression                { Negative($2) }
     | ifthen_expression                   { $1 }
 ;
-
-/* neg_expression:
-      TILDA neg_expression               { Negative($2) }
-    | ifthen_expression                  { $1 }
-; */
 
 ifthen_expression:
       IF bool_disjunction THEN bool_disjunction ELSE bool_disjunction FI { IfThenElse($2,$4,$6)}

@@ -47,8 +47,7 @@ let parser s rho =
 let rho s = match s with 
    "X" -> NumVal 5
 |  "Y" -> BoolVal true
+|  "M_t"->NumVal 4
 |  "Z" -> TupVal (3, [NumVal 5; BoolVal true; NumVal 1]);;
 
-(* let _ = (parser "5-3+2" rho);; *)
-let _ = parser "((abs(~ 1289) < abs(~ 6983)))\\/((((abs 2131)*(~ 3041) > abs(~(1879 div 8597))))/\\((abs(~ 1289) < abs(~ 6983))))" rho;;
-let _ = (parser "(~(abs 5347), if ((abs 1181 > ((abs 5347)*(~ 7481))div(277 div 5237)))\\/((((~ 9679)-(abs 8699))div(abs(2767 + 9661)) > (~ 2389)+(2713 - 9719))) then if not((abs(((~(abs(~ 9679)))+(~(~(abs 643))))+(6947 * 6779)) = ((X)+(abs((3163 div 4993)-((~ 953)-(abs 1583)))))+((abs(8537 - 4451))+((9311 + 9949)-(abs 457))))) then 2143 * 1613 else ~(~ 5449) fi else ~ 1553 fi, ((abs 9547 <= ~ 9901))/\\((~ 2389 = ~(abs 211))))" rho);;
+ let _ = (parser "proj(3,3)(1,2,T/\\F)" rho);; 

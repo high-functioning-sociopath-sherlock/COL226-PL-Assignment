@@ -56,6 +56,10 @@ let rho s = match s with
 |  "Y" -> BoolVal true
 |  "Z" -> TupVal (3, [NumVal 5; BoolVal true; NumVal 1]);;
 
+let rec revlistg l st = match l with 
+                        | []-> st
+                        | h::t -> revlistg t (h::st)
+
 
 
 (*Function to check if the given input have same type or not if same type(bigint or bool) then it returns 1 else throws an exception*)
@@ -388,10 +392,10 @@ let rec stackmc st rho op = match op, st with
                                                  | (x::xs), nn -> (get_nth xs (nn - 1)))  in
 
                                           let geti h1 n1 i1 = (match h1 with
-                                                                 | Tup(a, b) when (a = n1) -> (get_nth b i1)
-                                                                 | _ -> raise(Error "Tuple of appropriate length not found") ) in
+                                                                 | Tup(a, b) when (a = n1) -> (get_nth ( revlistg b []) i1)
+                                                                 | _ -> print_int(n1);raise(Error "Tuple of appropriate length not found") ) in
                                           
-                                          (geti h (n-1) i) 
+                                          (geti h (n) i) 
                 |PROJ(i, n)::tl, _ -> raise(Error "Stack is empty and operand cann't be fetched")
 
                 (* If then Else*)
