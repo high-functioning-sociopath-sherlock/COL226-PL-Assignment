@@ -1,22 +1,22 @@
 
 type sign = Neg | NonNeg
-type  bigint  = sign*int list
+type bigint = Bigint of sign*int list
 
 
 
-(*Functions to print    number*)
+(*Functions to print  bigint number*)
 (*function for printing the int list*)
 let rec print_list l = match l with 
      [] -> ""
     |hd::tl -> string_of_int(hd)^print_list tl;;
 
-(*Function to print the value of the  *)
+(*Function to print the value of the bigint*)
 let print_n b = match b with 
-    (x,y) -> if(x = Neg) then "Neg "
+    Bigint(x,y) -> if(x = Neg) then "Neg "
                    else "NonNeg ";;
 
 let print_num b = match b with 
-        (x, y)->  let show = print_n b in
+        Bigint(x, y)->  let show = print_n b in
                         let showlist  = print_list y in 
                         show^showlist;;
 
@@ -33,9 +33,9 @@ let rec int_to_list a acc = let temp = a/10 in
                         let re = a mod 10 in
                        if(temp = 0) then re::acc else int_to_list temp (re::acc);;
                        
-(* function to convert int to  *)
-let rec mk_big a = if( a >= 0) then (NonNeg,(int_to_list a [])) 
-                   else (Neg,(int_to_list (-1*a) []));;
+(* function to convert int to bigint*)
+let rec mk_big a = if( a >= 0) then Bigint(NonNeg,(int_to_list a [])) 
+                   else Bigint(Neg,(int_to_list (-1*a) []));;
 
 
 
@@ -255,21 +255,21 @@ let div_list l1 l2 = let new_l1 = remove_zero l1 in
 (*Division Ends here*)                     
 
 
-(*Comparison operation defined for  *)
+(*Comparison operation defined for bigint*)
 
-(* checking equality of the  *)
+(* checking equality of the bigint*)
 let eq b1 b2 = match b1 with 
-              (x,y) -> match b2 with 
-                            (u,v) -> if( u=x ) then 
+              Bigint(x,y) -> match b2 with 
+                            Bigint(u,v) -> if( u=x ) then 
                                                if((cmplist y v) = 0) then true else false
                                            else  if( y = [] && v = [] )then true
                                                  else false;;
 
 
-(*checking if b1 < b2 for   *)
+(*checking if b1 < b2 for bigint *)
 let lt b1 b2 = match b1 with 
-              (x1, y1) -> match b2 with 
-                                (x2, y2) -> if(x1 = x2) then 
+              Bigint(x1, y1) -> match b2 with 
+                                Bigint(x2, y2) -> if(x1 = x2) then 
                                                      if(x1 = NonNeg) then 
                                                         if((ltl y1 y2) = 1) then true else false
                                                      else
@@ -278,10 +278,10 @@ let lt b1 b2 = match b1 with
                                                   else if(x1 = Neg ) then true 
                                                   else false;;
 
-(*checking if b1>b2 for  *)
+(*checking if b1>b2 for bigint*)
 let gt b1 b2 = match b1 with 
-                (x1, y1) -> match b2 with 
-                                  (x2, y2) -> if(x1 = x2 )then 
+                Bigint(x1, y1) -> match b2 with 
+                                  Bigint(x2, y2) -> if(x1 = x2 )then 
                                                       if(x1 = Neg) then 
                                                         if((ltl y1 y2) = 1) then true else false
                                                       else
@@ -291,13 +291,13 @@ let gt b1 b2 = match b1 with
                                                     else false;;
 
 
-(*Checnking if a >= b  for the given   a and b*)
+(*Checnking if a >= b  for the given bigint a and b*)
 let geq b1 b2 = if((gt b1 b2) = true) then true 
                 else if((eq b1 b2) = true) then true 
                 else false;;
 
 
-(*Checnking if a =< b  for the given   a and b*)
+(*Checnking if a =< b  for the given bigint a and b*)
 let leq b1 b2 = if((lt b1 b2) = true) then true 
                 else if((eq b1 b2) = true) then true 
                 else false;;
@@ -305,49 +305,49 @@ let leq b1 b2 = if((lt b1 b2) = true) then true
 
 
 
-(*Arithmetic Operation defined for the   *)
+(*Arithmetic Operation defined for the bigint *)
 
-(*Function for adding 2  *)
+(*Function for adding 2 bigint*)
  let add b1 b2 = match b1, b2 with
-               (Neg, y1), (Neg, y2) -> (Neg , (sum y1 y2))
-              |(NonNeg, y1), (NonNeg, y2) -> (NonNeg, (sum y1 y2)) 
-              |(Neg, y1), (NonNeg, y2) -> if((gtl y1 y2) = 1) then  (Neg, (sub_list y1 y2)) else  (NonNeg, (sub_list y2 y1))
-              |(NonNeg, y1), (Neg, y2) -> if((gtl y1 y2) = 1) then  (NonNeg, (sub_list y1 y2)) else  (Neg, (sub_list y2 y1));;
+               Bigint(Neg, y1), Bigint(Neg, y2) -> Bigint(Neg , (sum y1 y2))
+              |Bigint(NonNeg, y1), Bigint(NonNeg, y2) -> Bigint(NonNeg, (sum y1 y2)) 
+              |Bigint(Neg, y1), Bigint(NonNeg, y2) -> if((gtl y1 y2) = 1) then Bigint(Neg, (sub_list y1 y2)) else Bigint(NonNeg, (sub_list y2 y1))
+              |Bigint(NonNeg, y1), Bigint(Neg, y2) -> if((gtl y1 y2) = 1) then Bigint(NonNeg, (sub_list y1 y2)) else Bigint(Neg, (sub_list y2 y1));;
 
 
-(*Function for subtracting 2   b1 - b2*)
+(*Function for subtracting 2 bigint b1 - b2*)
 let sub b1 b2 = match b1, b2 with 
-              (Neg, y1),  (Neg, y2) -> if((gtl y1 y2) = 1) then  (Neg, (sub_list y1 y2))else  (NonNeg, (sub_list y2 y1))
-             | (NonNeg, y1),  (NonNeg, y2) -> if((gtl y1 y2) = 1) then  (NonNeg, (sub_list y1 y2)) else  (Neg, (sub_list y2 y1))
-             | (Neg, y1),  (NonNeg, y2) ->  (Neg, (sum y1 y2))
-             | (NonNeg, y1),  (Neg, y2) ->  (NonNeg, (sum y1 y2));;
+              Bigint(Neg, y1), Bigint(Neg, y2) -> if((gtl y1 y2) = 1) then Bigint(Neg, (sub_list y1 y2))else Bigint(NonNeg, (sub_list y2 y1))
+             |Bigint(NonNeg, y1), Bigint(NonNeg, y2) -> if((gtl y1 y2) = 1) then Bigint(NonNeg, (sub_list y1 y2)) else Bigint(Neg, (sub_list y2 y1))
+             |Bigint(Neg, y1), Bigint(NonNeg, y2) -> Bigint(Neg, (sum y1 y2))
+             |Bigint(NonNeg, y1), Bigint(Neg, y2) -> Bigint(NonNeg, (sum y1 y2));;
 
  
-(*Function for multiplying 2  *)
+(*Function for multiplying 2 bigint*)
 let mult b1 b2 = match b1, b2 with 
-                  (x1, y1),  (x2, y2) -> if( x1 = x2 ) then  (NonNeg, (multl y1 y2) ) else  (Neg, (multl y1 y2));;
+                 Bigint(x1, y1), Bigint(x2, y2) -> if( x1 = x2 ) then Bigint(NonNeg, (multl y1 y2) ) else Bigint(Neg, (multl y1 y2));;
 
-(*Function for Quotient of 2   b1 and b2 answer is b1/b2*)
+(*Function for Quotient of 2 bigint b1 and b2 answer is b1/b2*)
 let div b1 b2 = match b1, b2 with 
-                  (NonNeg, y1),  (NonNeg, y2) ->  (NonNeg , extract_x(div_list y1 y2))
-                | (Neg, y1),  (NonNeg, y2) ->  (Neg, extract_x(div_list y1 y2))
-                | (NonNeg, y1),  (Neg, y2) ->  (Neg, extract_x(div_list y1 y2))
-                | (Neg, y1),  (Neg, y2) ->  (NonNeg, extract_y(div_list y1 y2));;                                            
+                 Bigint(NonNeg, y1), Bigint(NonNeg, y2) -> Bigint(NonNeg , extract_x(div_list y1 y2))
+                |Bigint(Neg, y1), Bigint(NonNeg, y2) -> Bigint(Neg, extract_x(div_list y1 y2))
+                |Bigint(NonNeg, y1), Bigint(Neg, y2) -> Bigint(Neg, extract_x(div_list y1 y2))
+                |Bigint(Neg, y1), Bigint(Neg, y2) -> Bigint(NonNeg, extract_y(div_list y1 y2));;                                            
 
-(*Function for Remainder of 2   b1 and b2 answer is b1%b2*)
+(*Function for Remainder of 2 bigint b1 and b2 answer is b1%b2*)
 let rem b1 b2 = match b1, b2 with 
-                  (NonNeg, y1),  (NonNeg, y2) ->  (NonNeg , extract_y(div_list y1 y2))
-                |  (Neg, y1),  (NonNeg, y2) ->  (Neg, extract_y(div_list y1 y2))
-                | (NonNeg, y1),  (Neg, y2) ->  (NonNeg,  extract_y(div_list y1 y2))
-                | (Neg, y1),  (Neg, y2) ->  (Neg,  extract_y(div_list y1 y2));;
+                 Bigint(NonNeg, y1), Bigint(NonNeg, y2) -> Bigint(NonNeg , extract_y(div_list y1 y2))
+                | Bigint(Neg, y1), Bigint(NonNeg, y2) -> Bigint(Neg, extract_y(div_list y1 y2))
+                |Bigint(NonNeg, y1), Bigint(Neg, y2) -> Bigint(NonNeg,  extract_y(div_list y1 y2))
+                |Bigint(Neg, y1), Bigint(Neg, y2) -> Bigint(Neg,  extract_y(div_list y1 y2));;
 
 
 (*Calculating the absolute value*)
 let abs x = match x with 
-     (x, y) ->  (NonNeg,y);;
+    Bigint(x, y) -> Bigint(NonNeg,y);;
 
 
 (*Unary Negation*)
 let minus x = match x with 
-     (x,y) -> if(x=Neg)then  (NonNeg,y)
-                   else  (Neg, y);;
+    Bigint(x,y) -> if(x=Neg)then Bigint(NonNeg,y)
+                   else Bigint(Neg, y);;

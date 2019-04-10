@@ -50,21 +50,22 @@ let rho s = match s with
   "X" -> NumVal 5
   |  "Y" -> BoolVal true
   |  "Z" -> TupVal (3, [NumVal 5; BoolVal true; NumVal 1])
-  | _ -> raise Not_implemented`
+  | _ -> raise Not_implemented
 ;;
 
 (* Sample parsing *)
 print_endline ( print_tree (exp_parser "5" rho));;
-print_endline ( print_def (def_parser "def a=5" rho));;
+print_endline ( print_def (def_parser "def A = 5" rho));;
 
 (* Sample test case *)
 let e = (exp_parser "\\X.Y" rho);;
 let t = Tfunc (Tint, Tbool);;
 
-(* Type assumptions as a list of tuples of the form (variable name, type) *)
-let g = [("X", Tint), ("Y", Tbool), ("Z", Ttuple [Tint ; Tbool ; Tint]), ("W", Tfunc (Tint, Tbool))];;
-let d = (def_parser "def U = X ; def V = Y" rho);;
-let g_dash = [("U", Tint), ("V", Tbool)];;
+(* Type assumptions as a list of tuples of the form (variable name, type)  *)
+let g = ("X", Tint)::("Y", Tbool)::("Z", Ttuple [Tint ; Tbool ; Tint]):: ("W", Tfunc (Tint, Tbool))::[];;
+let d = (def_parser "def U=X ; def V=Y" rho);;
+let g_dash = [("U", Tint);("V", Tbool)];;
 
 assert(hastype g e t);;
-assert(yields g d g_dash);;
+yields g d g_dash;;
+yield g d g_dash;;

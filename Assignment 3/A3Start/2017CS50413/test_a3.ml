@@ -50,4 +50,16 @@ let rho s = match s with
 |  "M_t"->NumVal 4
 |  "Z" -> TupVal (3, [NumVal 5; BoolVal true; NumVal 1]);;
 
- let _ = (parser "proj(3,3)(1,2,T/\\F)" rho);; 
+(* let _= (parser "proj(1,2)(proj(1,3)((1,2),20,30))" rho);;
+*)
+
+ let a1 = (parser "if proj(2,3)((1,2), 2>1, 30) then X+1 else X fi" rho);; 
+ let a2 = (parser "proj(2,3)((1,2), 2>1,30)" rho);;
+
+ let a4 = (parser "if T then 3 else 4 fi" rho);;
+ let a5 = (parser "if T/\\F then 2 else 5 fi" rho);;
+ let a6 = (parser "if X=5 then T else F fi" rho);;
+ let a7 = (parser "if5>6 then 5 else 6 fi + 1" rho);;
+ let a8 = (parser "if Y then X+4div5 else X+5div4 fi" rho);;
+ let a9 = (parser "if proj(2,3) Z then 4+3div2 else 4+5div2 fi" rho);;
+ let a10 = (parser "if (abs (25-49)<5*5) then proj(1,2)(4,5) else proj(2,2)(4,5) fi" rho);;
