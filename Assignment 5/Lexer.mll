@@ -1,6 +1,5 @@
 {
-  open A3
-  exception Not_implemented
+  open Parser
 	exception Foo of string
 }
 
@@ -52,16 +51,8 @@ let underscore = '_'
 let appostro = '\''
 let identifier = (lletter+)(letter |digits |underscore |appostro)*
 
-(*Assignment 4*)
-let letdef = "let"
-let indef = "in"
-let enddef = "end"
 let backs = "\\"
-let dot = '.'
-let def = "def"
-let semidef = ";"
-let parallel = "||"
-let localdef = "local"
+
 
 (*Regular expression for Integer*)
 let sign = '~'
@@ -73,26 +64,14 @@ rule read = parse
 | boolt               { BOOL (true)}
 | boolf               { BOOL (false)}
 
-| absolute            { ABS }
-| "proj"              { PROJ }
+| mult                { MULT }
 | plus                { PLUS }
-| minus               { MINUS }
-| mult                { TIMES }
-| div                 { DIV }
-| mod                 { REM }
-| ','                 {COMMA}
-| sign                {TILDA}
 
 | rp                  { RP }
 | lp                  { LP }
 
-| booland             { CONJ }
-| boolor              { DISJ }
-| boolnot             { NOT }
-
-| gta                 { GT }
-| lta                 { LT }
-| eq                  { EQ }
+| booland             { AND }
+| boolor              { OR }
 
 | cif                 { IF }
 | cthen               { THEN }
@@ -101,18 +80,8 @@ rule read = parse
 
 | identifier as r     { ID r }
 
+| backs               { LAMBDA }
+
 | whitespace          { read lexbuf}
-
-| letdef               { LET }
-| indef                { IN } 
-| enddef               { END }
-| backs                { BACKSLASH }
-| dot                  { DOT }
-| def                  { DEF }
-| ';'                  { SEMICOLON }      
-| parallel             { PARALLEL }
-| localdef             { LOCAL }
-
-| ':'                  { COLON }
 
 | _                   { raise(Foo "Bad Input")}

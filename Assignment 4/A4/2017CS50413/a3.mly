@@ -23,7 +23,7 @@
 %token <bool> BOOL
 %token <string> ID
 %token ABS TILDA NOT PLUS MINUS TIMES DIV REM CONJ DISJ EQ GT LT LP RP IF THEN ELSE FI COMMA PROJ
-LET IN END BACKSLASH DOT DEF SEMICOLON PARALLEL LOCAL EOF
+LET IN END BACKSLASH DOT DEF SEMICOLON COLON PARALLEL LOCAL EOF
 %start def_parser exp_parser
 %type <A1.definition> def_parser /* Returns definitions */
 %type <A1.exptree> exp_parser /* Returns expression */
@@ -41,11 +41,11 @@ exp_parser:
 ;
 
 bool_disjunction:
-      bool_disjunction DISJ bool_conjunction { Disjunction($1, $3)}
-    | LET def IN bool_disjunction END         { Let($2, $4)}
-    | bool_disjunction LP bool_disjunction RP { FunctionCall($1, $3)}
-    | BACKSLASH ID DOT bool_disjunction       { FunctionAbstraction($2, $4)}
-    | bool_conjunction                       { $1 }
+      bool_disjunction DISJ bool_conjunction        { Disjunction($1, $3)}
+    | LET def IN bool_disjunction END               { Let($2, $4)}
+    | bool_disjunction LP bool_disjunction RP       { FunctionCall($1, $3)}
+    | BACKSLASH ID COLON type1 DOT bool_disjunction { FunctionAbstraction($2, $4, $6)}
+    | bool_conjunction                              { $1 }
 ;
 
 bool_conjunction:
@@ -155,6 +155,10 @@ parallel_def:
 ;
 
 simple_def:
-  DEF ID EQ bool_disjunction    {Simple($2, $4)}
-| LOCAL def IN def END          {Local($2, $4)}
+  DEF ID COLON type1 EQ bool_disjunction    {Simple($2, $4, $6)}
+| LOCAL def IN def END                     {Local($2, $4)}
 ;
+
+type1:
+    ID            { if($1 = "Tint" )then Tint else Tbool }
+  ;

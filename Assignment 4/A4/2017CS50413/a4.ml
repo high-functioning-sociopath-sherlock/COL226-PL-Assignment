@@ -36,30 +36,66 @@ let rec checktype g s = (match g with
 
 
 
+(*function that takes an input current table and an defination and gives the output table after defination*)
+and tableupdate g d = match d with 
+                            | Simple(s, ty, e) -> (s, ty)::g
+                            | Sequence(l) -> (match l with 
+                                                 | [] -> g
+                                                 | h::t -> tableupdate ((removesamelist g (tableupdate g h))@(tableupdate g h)) (Sequence t) )
+                            | Parallel(l) -> (match l with 
+                                                 | [] -> g
+                                                 | h::t -> (tableupdate (tableupdate g h) (Sequence t) ) )
+                            | Local(d1, d2) -> let new_g = tableupdate g d1 in
+                                               let new_gd = tableupdate new_g d2 in
+                                               (removesamelist new_gd new_g)@g
+                     
+let rec tablechange g d gnext= match d with 
+                            | Simple(s,ty, e) -> (s,ty)::[] 
+                            | Sequence(l) -> (match l with 
+                                                 | [] -> gnext
+                                                 | h::t ->  let typeh = (tablechange g h []) in
+                                                            tablechange ((removesamelist g typeh)@typeh) (Sequence t) ((removesamelist gnext typeh)@typeh) )
+                            | Parallel(l) -> (match l with 
+                                                 | [] -> gnext
+                                                 | h::t ->  let typeh = (tablechange g h []) in
+                                                            tablechange ((removesamelist g typeh)@typeh) (Parallel t) ((removesamelist gnext typeh)@typeh) )
+                            | Local(d1, d2) -> let new_g = tableupdate g d1 in
+                                               tablechange new_g d2 []  
+
+let rec tableup g d = match d with
+                            | Simple(s, ty, e) -> (s, ty)::g
+                            | Sequence(l) -> (match l with 
+                                                 | [] -> g
+                                                 | h::t -> tableup (tableup g h) (Sequence t) )
+                            | Parallel(l) -> g
+                            | Local(d1, d2) -> let new_g = tableupdate g d1 in
+                                               let new_gd = tableupdate new_g d2 in
+                                               (removesamelist new_gd new_g)@g
+
 (*function that returns the correct type of the exptree*)
 let rec istype g e = match e with 
                      | Var(a) -> (checktype g a)
                      | N(a) -> Tint
                      | B(a) -> Tbool
 
-                     | Abs(a) -> Tint
-                     | Negative(a) -> Tint
-                     | Not(a) -> Tbool
+                     | Abs(a) -> if(((istype g a)=Tint)) then Tint else Tunit
+                     | Negative(a) -> if(((istype g a)=Tint)) then Tint else Tunit
+                     | Not(a) -> if(((istype g a)=Tbool)) then Tbool else Tunit
 
-                     | Add(e1, e2) -> Tint
-                     | Sub(e1, e2) -> Tint
-                     | Mult(e1, e2) -> Tint
-                     | Div(e1, e2) -> Tint
-                     | Rem(e1, e2) -> Tint
+                     | Add(e1, e2) -> if(((istype g e1)=Tint) && ((istype g e2) = Tint)) then Tint else Tunit
+                     | Sub(e1, e2) -> if(((istype g e1)=Tint) && ((istype g e2) = Tint)) then Tint else Tunit
+                     | Mult(e1, e2) -> if(((istype g e1)=Tint) && ((istype g e2) = Tint)) then Tint else Tunit
+                     | Div(e1, e2) -> if(((istype g e1)=Tint) && ((istype g e2) = Tint)) then Tint else Tunit
+                     | Rem(e1, e2) -> if(((istype g e1)=Tint) && ((istype g e2) = Tint)) then Tint else Tunit
 
-                     | Conjunction(e1, e2) -> Tbool
-                     | Disjunction(e1, e2) -> Tbool
+                     | Conjunction(e1, e2) -> if(((istype g e1)=Tbool) && ((istype g e2) = Tbool)) then Tbool else Tunit
+                     | Disjunction(e1, e2) -> if(((istype g e1)=Tbool) && ((istype g e2) = Tbool)) then Tbool else Tunit
 
-                     | Equals(e1, e2)-> Tbool
-                     | GreaterTE(e1, e2) -> Tbool
-                     | LessTE(e1, e2) -> Tbool
-                     | GreaterT(e1, e2) -> Tbool
-                     | LessT(e1, e2) -> Tbool
+                     | Equals(e1, e2)-> if(((istype g e1)=Tint) && ((istype g e2) = Tint)) then Tbool else Tunit
+                     | GreaterTE(e1, e2) -> if(((istype g e1)=Tint) && ((istype g e2) = Tint)) then Tbool else Tunit
+                     | LessTE(e1, e2) -> if(((istype g e1)=Tint) && ((istype g e2) = Tint)) then Tbool else Tunit
+                     | GreaterT(e1, e2) -> if(((istype g e1)=Tint) && ((istype g e2) = Tint)) then Tbool else Tunit
+                     | LessT(e1, e2) -> if(((istype g e1)=Tint) && ((istype g e2) = Tint)) then Tbool else Tunit
 
                      | InParen(a) -> (istype g a)
 
@@ -78,42 +114,15 @@ let rec istype g e = match e with
                                                (match type1 with 
                                                      | Tfunc(t1, t2)-> t2
                                                      | _ -> Tunit)
-                     | FunctionAbstraction(s, e1)-> let typestring = (checktype g s) in
-                                                    Tfunc(typestring, (istype g e1))
-                     | Let(d1, e1) -> let new_g = tableupdate g d1 in
+                     | FunctionAbstraction(s,ty, e1)-> let typestring = (checktype g s) in
+                                                       Tfunc(typestring, (istype g e1))
+                     | Let(d1, e1) -> let new_g = tableup g d1 in
                                       istype new_g e1
  
                                                     
 
 
-(*function that takes an input current table and an defination and gives the output table after defination*)
-and tableupdate g d = match d with 
-                            | Simple(s, e) -> (s,(istype g e))::g
-                            | Sequence(l) -> (match l with 
-                                                 | [] -> g
-                                                 | h::t -> tableupdate ((removesamelist g (tableupdate g h))@(tableupdate g h)) (Sequence t) )
-                            | Parallel(l) -> (match l with 
-                                                 | [] -> g
-                                                 | h::t -> (tableupdate (tableupdate g h) (Sequence t) ) )
-                            | Local(d1, d2) -> let new_g = tableupdate g d1 in
-                                               let new_gd = tableupdate new_g d2 in
-                                               (removesamelist new_gd new_g)@g
-                     
-let rec tablechange g d gnext= match d with 
-                            | Simple(s, e) -> (s,(istype g e))::[] 
-                            | Sequence(l) -> (match l with 
-                                                 | [] -> gnext
-                                                 | h::t ->  let typeh = (tablechange g h []) in
-                                                            tablechange ((removesamelist g typeh)@typeh) (Sequence t) ((removesamelist gnext typeh)@typeh) )
-                            | Parallel(l) -> (match l with 
-                                                 | [] -> gnext
-                                                 | h::t ->  let typeh = (tablechange g h []) in
-                                                            tablechange ((removesamelist g typeh)@typeh) (Parallel t) ((removesamelist gnext typeh)@typeh) )
-                            | Local(d1, d2) -> let new_g = tableupdate g d1 in
-                                               tablechange new_g d2 []  
-
-
-
+                                               
 (* hastype : ((string * exptype) list) -> exptree -> exptype -> bool *)
 let rec hastype g e t = match e with 
                        | Var(a) -> if((checktype g a) = t)then true else false
@@ -179,13 +188,17 @@ let rec hastype g e t = match e with
                                                       | Ttuple(l) -> ((List.nth l (a1-1)) = t )&& true 
                                                       | _ -> false)
 
-                       | Let(d, e) -> let new_g = tableupdate g d in
-                                      let type1 = istype new_g e in
-                                      (type1 = t)&&(true)
-
-                       |FunctionAbstraction(s, e1) -> (match t with 
-                                                           | Tfunc(t1, t2) -> (t2 = (istype ((s, t1)::g)) e1)&&(true) 
-                                                           | _ ->false)
+                       | Let(d, e) -> (match d with 
+                                         | Parallel(ls) -> let type2 = istype g e in 
+                                                            (type2 = t)&&(true)
+                                         | _ -> let new_g = tableupdate g d in
+                                                let type1 = istype new_g e in
+                                                (type1 = t)&&(true) )
+                                      
+                                      
+                       |FunctionAbstraction(s, ty, e1) -> (match t with 
+                                                             | Tfunc(t1, t2) -> if((t1 = ty) && (hastype ((s,ty)::g) e1 t2))then true else false
+                                                             | _ -> false)
 
                        |FunctionCall(e1, e2) -> (t = (istype g e))
 
@@ -197,3 +210,11 @@ let rec yields g d g_dash = let g_calculated = tablechange g d [] in
 
 let rec yield g d g_dash = let g_calculated = tablechange g d [] in
                                g_calculated
+
+(* 
+let rec checkdef g d = match d with 
+                          | Simple(s, ty, e) -> true
+                          | Sequence(l) -> (match l with 
+                                                | []-> true
+                                                | h::t -> )
+                                                 *)
