@@ -3,13 +3,11 @@
     exception Exp of string
 %}
 
-
-
 %token <int> INT
 %token <bool> BOOL
 %token <string> ID
 %token <string> PARAMETERS
-%token  EOF RP LP  COMMA INT
+%token  EOF RP LP COMMA INT EQUAL
 %start exp_parser
 %type  <StackFrame.funcall>exp_parser 
 %%

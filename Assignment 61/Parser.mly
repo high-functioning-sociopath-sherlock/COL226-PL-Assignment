@@ -3,6 +3,7 @@
     exception Exp of string
 %}
 
+
 %token <int> INT
 %token <bool> BOOL
 %token <string> ID

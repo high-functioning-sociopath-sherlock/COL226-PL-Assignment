@@ -1,6 +1,6 @@
 exception Foo of string
 
-type funcall = S of string | I of int | Call of (string*funcall*funcall) | Cal of string
+type funcall = S of string | I of int | Call of (string*funcall*funcall) | Cal of string | Assign of string*int
 
 (* data structure to store the variable name with its integer value *)
 type tuple = Tup of (string*int)
@@ -36,6 +36,7 @@ let rec tprint_list = function
 (* Function to print the content of string list *)
 let rec sprint_list = function 
                       [] -> ()
+                      | [h] -> print_string h
                       | e::l -> print_string e ; print_string " " ; sprint_list l
                       
 (* Returns true if the element is present in the list *)
@@ -45,23 +46,23 @@ let rec search_string_list s ls = match ls with
  
 (* function to add an frame to the stack already present *)
 let add sframe name a1 a2 = match name with
-                              | "main" -> let frame = Frame ("main", [], Tup("a", 0)::Tup("b", 0)::[Tup("c", 0)], [] ) in
+                              | "main" -> let frame = Frame ("main", [], Tup("a", 0)::Tup("b", 0)::[Tup("c", 0)], ["main"] ) in
                                           frame::sframe
-                              | "P" -> let frame = Frame ("P", Tup("x", a1)::[Tup("y", a2)], Tup("z", 0)::[Tup("a", 0)], ["main"] ) in
+                              | "P" -> let frame = Frame ("P", Tup("x", a1)::[Tup("y", a2)], Tup("z", 0)::[Tup("a", 0)], "P"::["main"] ) in
                                         frame::sframe
-                              | "Q" -> let frame = Frame ("Q", Tup("z", a1)::[Tup("w", a2)], Tup("x", 0)::[Tup("b", 0)], ["main"] ) in
+                              | "Q" -> let frame = Frame ("Q", Tup("z", a1)::[Tup("w", a2)], Tup("x", 0)::[Tup("b", 0)], "Q"::["main"] ) in
                                        frame::sframe
-                              | "R" -> let frame = Frame ("R", Tup("w", a1)::[Tup("i", a2)], Tup("j", 0)::[Tup("b", 0)], "P"::["main"] ) in
+                              | "R" -> let frame = Frame ("R", Tup("w", a1)::[Tup("i", a2)], Tup("j", 0)::[Tup("b", 0)], "R"::"P"::["main"] ) in
                                        frame::sframe
-                              | "S" -> let frame = Frame ("S", Tup("c", a1)::[Tup("k", a2)], Tup("m", 0)::[Tup("n", 0)], "P"::["main"] ) in
+                              | "S" -> let frame = Frame ("S", Tup("c", a1)::[Tup("k", a2)], Tup("m", 0)::[Tup("n", 0)], "S"::"P"::["main"] ) in
                                        frame::sframe
-                              | "V" -> let frame = Frame ("V", Tup("m", a1)::[Tup("n", a2)], [Tup("c", 0)], "R"::"P"::["main"] ) in
+                              | "V" -> let frame = Frame ("V", Tup("m", a1)::[Tup("n", a2)], [Tup("c", 0)], "V"::"R"::"P"::["main"] ) in
                                        frame::sframe
-                              | "T" -> let frame = Frame ("T", Tup("a", a1)::[Tup("y", a2)], Tup("i", 0)::[Tup("j", 0)], "Q"::["main"] ) in
+                              | "T" -> let frame = Frame ("T", Tup("a", a1)::[Tup("y", a2)], Tup("i", 0)::[Tup("j", 0)], "T"::"Q"::["main"] ) in
                                        frame::sframe
-                              | "W" -> let frame = Frame ("W", Tup("m", a1)::[Tup("p", a2)], Tup("j", 0)::[Tup("h", 0)], "T"::"Q"::["main"] ) in
+                              | "W" -> let frame = Frame ("W", Tup("m", a1)::[Tup("p", a2)], Tup("j", 0)::[Tup("h", 0)], "W"::"T"::"Q"::["main"] ) in
                                        frame::sframe
-                              | "U" -> let frame = Frame ("U", Tup("c", a1)::[Tup("z", a2)], Tup("p", 0)::[Tup("g", 0)], "Q"::["main"] ) in
+                              | "U" -> let frame = Frame ("U", Tup("c", a1)::[Tup("z", a2)], Tup("p", 0)::[Tup("g", 0)], "U"::"Q"::["main"] ) in
                                        frame::sframe
                               | _ -> raise (Foo "Entered name of the frame function is wrong")
 
@@ -135,12 +136,53 @@ let rec get_val_from_tuple_list s ls = match ls with
 (* function to append list such that no common element present in list2 is not added again in the final anslist *)
 let rec app list1 list2 = match list1 with
                             | [] -> list2
-                            | (Tup(name, value))::t ->  if(search_tuple_list name list2)then app t list2 else app t (Tup(name, value)::list2)
+                            | (Tup(name, value))::t ->  if(search_tuple_list name list2)then (app t list2) else app t (Tup(name, value)::list2)
 
 (* function to get the list of all variables parameters removing the second variable list  *)
 let rec getvarlist framelist anslist = match framelist with
                                         | [] -> anslist
-                                        | Frame(name, plist, llist, slink)::t -> getvarlist t (app plist (app llist anslist))
+                                        | Frame(name, plist, llist, slink)::t -> getvarlist t (app anslist (plist@llist))
                               
 let getvariables framelist = getvarlist framelist []
 
+(* gives true if the function can be called else false *)
+let checkfuncall s fname = search_string_list s (retcallfun fname)
+
+(* To reverse the list  *)
+let rec revlis ilist olist = match ilist with
+                              | [] -> olist
+                              | h::t ->  revlis t (h::olist)
+
+let revlist ilist = revlis ilist []
+
+
+let rec reduceframestack name sframes aframes= match sframes with
+                                                | [] -> ([], aframes)
+                                                | Frame(s, plist, llist, slink)::t -> if(name = s) then (sframes, aframes) else reduceframestack name t (Frame(s, plist, llist, slink)::aframes) 
+
+let rframestack name sframes = reduceframestack name sframes []
+
+
+let rec framename name sframes slink = match sframes with 
+                                        | [] -> print_string "in framename";raise(Foo "Error No variable found")
+                                        | Frame(s, plist, llist, slinkk)::t -> if((search_string_list s slink)&&((search_tuple_list name plist)||(search_tuple_list name llist))) then s 
+                                                                           else framename name t slink 
+
+let changevariable slink sframe name valu = let fname = framename name sframe slink in
+                                            let frametuple = rframestack fname  sframe in
+                                            (match frametuple with 
+                                                | (sframes , aframes ) -> (match sframes with 
+                                                                              | [] -> print_string "in changevariable";raise (Foo "Error stack frame is empty")
+                                                                              | Frame(s, plist, llist, slink)::t -> if(search_tuple_list name plist) then ( (revlist aframes)@(Frame(s, (change name plist valu), llist, slink)::t) )
+                                                                                                                      else (print_string s ; (revlist aframes)@(Frame(s, plist, (change name llist valu), slink)::t) ) ) )
+
+let frame1 = Frame ("main", [], Tup("a", 0)::Tup("b", 0)::[Tup("c", 0)], ["main"] )
+
+let frame2 = Frame ("Q", Tup("z", 1)::[Tup("w", 2)], Tup("x", 0)::[Tup("b", 0)], "Q"::["main"] )
+
+let frame3 = Frame ("P", Tup("x", 11)::[Tup("y", 22)], Tup("z", 0)::[Tup("a", 0)], "P"::["main"] )
+
+let rec print_stack sframe =  match sframe with 
+                                  | [] -> print_string ""
+                                  | [Frame(name, plist, llist, slink)] -> print_string name
+                                  | Frame(name, plist, llist, slink)::t -> print_string name ; print_string ", "; print_stack t 
